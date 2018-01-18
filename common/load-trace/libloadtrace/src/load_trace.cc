@@ -50,7 +50,10 @@ int main(int argc, char** argv) {
   confluo::rpc::rpc_client client(host, port);
   std::string trace_name = get_name(trace_file);
   client.create_atomic_multilog(trace_name, schema,
-                                confluo::storage::storage_mode::IN_MEMORY);
+                                confluo::storage::storage_mode::DURABLE_RELAXED);
+  client.add_index("vlan1_tag");
+  client.add_index("vlan2_tag");
+  client.add_index("ipv4_tos");
   size_t pkt_size = client.current_schema().record_size();
   size_t num_pkts = trace_bytes / pkt_size;
   for (size_t i = 0; i < num_pkts; i++) {
