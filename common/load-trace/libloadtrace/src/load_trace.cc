@@ -6,6 +6,14 @@
 
 #include "rpc_client.h"
 
+std::string get_name(const std::string& s) {
+  char sep = '/';
+  size_t i = s.rfind(sep, s.length());
+  if (i != std::string::npos) 
+    return(s.substr(i + 1, s.length() - i));
+  return "";
+}
+
 int main(int argc, char** argv) {
   if (argc < 5) {
     fprintf(stderr, "Usage: %s [schema] [trace] [host] [port]\n",
@@ -40,7 +48,8 @@ int main(int argc, char** argv) {
   // Load trace to Conlfuo
   fprintf(stderr, "Loading trace...\n");
   confluo::rpc::rpc_client client(host, port);
-  client.create_atomic_multilog(trace_file, schema,
+  std::string trace_name = get_name(trace_file);
+  client.create_atomic_multilog(trace_name, schema,
                                 confluo::storage::storage_mode::IN_MEMORY);
   size_t pkt_size = client.current_schema().record_size();
   size_t num_pkts = trace_bytes / pkt_size;
