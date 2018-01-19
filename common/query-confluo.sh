@@ -7,4 +7,4 @@ ep_list=${1:-"eps.txt"}
 filter=${2:-""}
 aggregate=${3:-""}
 
-$sbin/filter-confluo/build/bin/filter_confluo $ep_list $filter $aggregate
+$sbin/query-confluo/build/bin/query_confluo $ep_list $filter $aggregate
