@@ -37,27 +37,22 @@ void snapshot_all(std::vector<uint64_t>& snap,
                   std::vector<confluo::rpc::rpc_client>& clients) {
   std::vector<std::thread> workers;
   for (size_t i = 0; i < clients.size(); i++) {
-    workers.push_back(std::thread([i, &clients, &snap]() {
-      snap[i] = clients[i].num_records();
-    }));
+    clients[i].send_num_records();
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
-    workers[i].join();
+    snap[i] = clients[i].recv_num_records();
   }
 }
 
 void query_all(std::vector<bool>& res, const std::string& filter_expr,
                std::vector<confluo::rpc::rpc_client>& clients) {
-  std::vector<std::thread> workers;
   for (size_t i = 0; i < clients.size(); i++) {
-    workers.push_back(std::thread([i, filter_expr, &res, &clients]() {
-      res[i] = clients[i].execute_filter(filter_expr).has_more();
-    }));
+    clients[i].send_execute_filter(filter_expr);
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
-    workers[i].join();
+    res[i] = clients[i].recv_execute_filter().has_more();
   }
 }
 
