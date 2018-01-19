@@ -47,15 +47,13 @@ void snapshot_all(std::vector<uint64_t>& snap,
   }
 }
 
-void query_all(std::vector<std::string>& res, const std::string& aggregate_expr,
-               const std::string& filter_expr,
+void query_all(std::vector<bool>& res, const std::string& filter_expr,
                std::vector<confluo::rpc::rpc_client>& clients) {
   std::vector<std::thread> workers;
   for (size_t i = 0; i < clients.size(); i++) {
-    workers.push_back(
-        std::thread([i, aggregate_expr, filter_expr, &res, &clients]() {
-          res[i] = clients[i].execute_aggregate(aggregate_expr, filter_expr);
-        }));
+    workers.push_back(std::thread([i, filter_expr, &res, &clients]() {
+      res[i] = clients[i].execute_filter(filter_expr).has_more();
+    }));
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
@@ -98,7 +96,7 @@ int main(int argc, char** argv) {
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
   std::vector<uint64_t> snap(eps.size());
-  std::vector<std::string> res(eps.size());
+  std::vector<bool> res(eps.size());
   while (true) {
     std::string query_str;
     std::getline(std::cin, query_str);
@@ -118,7 +116,7 @@ int main(int argc, char** argv) {
 
     // Execute query
     auto qt1 = utils::time_utils::cur_us();
-    query_all(res, aggregate_expr, filter_expr, clients);
+    query_all(res, filter_expr, clients);
     auto qt2 = utils::time_utils::cur_us();
 
     // Breakdown connections
@@ -132,7 +130,7 @@ int main(int argc, char** argv) {
             ct, st, qt);
     fprintf(stderr, "Result vector: ");
     for (auto r : res) {
-      fprintf(stderr, " %s ", r.c_str());
+      fprintf(stderr, " %u ", r);
     }
     fprintf(stderr, "\n");
   }
