@@ -9,7 +9,7 @@
 #include "time_utils.h"
 
 void print_usage(char* exec) {
-  fprintf(stderr, "Usage: %s [end-points] [query]\n", exec);
+  fprintf(stderr, "Usage: %s [end-points] [filter] [aggregate]\n", exec);
 }
 
 struct endpoint {
@@ -78,7 +78,7 @@ void disconnect_all(std::vector<confluo::rpc::rpc_client>& clients) {
 
 int main(int argc, char** argv) {
   if (argc != 4) {
-    fprintf(stderr, "Must specify at least one end-point\n");
+    fprintf(stderr, "Expected 4 args, got %d\n", argc);
     print_usage(argv[0]);
     return -1;
   }
