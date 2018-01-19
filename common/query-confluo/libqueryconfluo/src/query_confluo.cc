@@ -47,18 +47,15 @@ void snapshot_all(std::vector<uint64_t>& snap,
   }
 }
 
-void query_all(std::vector<size_t>& res, const std::string& query,
+void query_all(std::vector<std::string>& res, const std::string& aggregate_expr,
+               const std::string& filter_expr,
                std::vector<confluo::rpc::rpc_client>& clients) {
   std::vector<std::thread> workers;
   for (size_t i = 0; i < clients.size(); i++) {
-    workers.push_back(std::thread([i, query, &res, &clients]() {
-      auto r = clients[i].execute_filter(query);
-      res[i] = 0;
-      while (r.has_more()) {
-        res[i] ++;
-        ++r;
-      }
-    }));
+    workers.push_back(
+        std::thread([i, aggregate_expr, filter_expr, &res, &clients]() {
+          res[i] = clients[i].execute_aggregate(aggregate_expr, filter_expr);
+        }));
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
@@ -101,10 +98,13 @@ int main(int argc, char** argv) {
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
   std::vector<uint64_t> snap(eps.size());
-  std::vector<size_t> res(eps.size());
+  std::vector<std::string> res(eps.size());
   while (true) {
-    std::string query;
-    std::getline(std::cin, query);
+    std::string query_str;
+    std::getline(std::cin, query_str);
+    auto query_parts = utils::string_utils::split(query_str, ',');
+    std::string aggregate_expr = query_parts[0];
+    std::string filter_expr = query_parts[1];
 
     // Setup connections
     auto ct1 = utils::time_utils::cur_us();
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 
     // Execute query
     auto qt1 = utils::time_utils::cur_us();
-    query_all(res, query, clients);
+    query_all(res, aggregate_expr, filter_expr, clients);
     auto qt2 = utils::time_utils::cur_us();
 
     // Breakdown connections
@@ -128,11 +128,11 @@ int main(int argc, char** argv) {
     auto st = (st2 - st1);
     auto qt = (qt2 - qt1);
     auto tot = ct + st + qt;
-    fprintf(stderr, "Query time: %llu us (%llu us + %llu us + %llu us)", tot,
+    fprintf(stderr, "Query time: %llu us (%llu us + %llu us + %llu us)\n", tot,
             ct, st, qt);
     fprintf(stderr, "Result vector: ");
-    for (auto r: res) {
-      fprintf(stderr, " %zu ", r);
+    for (auto r : res) {
+      fprintf(stderr, " %s ", r.c_str());
     }
     fprintf(stderr, "\n");
   }
