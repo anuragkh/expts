@@ -97,43 +97,40 @@ int main(int argc, char** argv) {
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
   std::vector<uint64_t> snap(eps.size());
   std::vector<bool> res(eps.size());
-  while (true) {
-    std::string query_str;
-    std::getline(std::cin, query_str);
-    auto query_parts = utils::string_utils::split(query_str, ',');
-    std::string aggregate_expr = query_parts[0];
-    std::string filter_expr = query_parts[1];
 
-    // Setup connections
-    auto ct1 = utils::time_utils::cur_us();
-    connect_all(clients, eps);
-    auto ct2 = utils::time_utils::cur_us();
+  std::string query;
+  std::cerr << "Filter expression: ";
+  std::getline(std::cin, query);
 
-    // Emulate snapshot algorithm
-    auto st1 = utils::time_utils::cur_us();
-    snapshot_all(snap, clients);
-    auto st2 = utils::time_utils::cur_us();
+  // Setup connections
+  auto ct1 = utils::time_utils::cur_us();
+  connect_all(clients, eps);
+  auto ct2 = utils::time_utils::cur_us();
 
-    // Execute query
-    auto qt1 = utils::time_utils::cur_us();
-    query_all(res, filter_expr, clients);
-    auto qt2 = utils::time_utils::cur_us();
+  // Emulate snapshot algorithm
+  auto st1 = utils::time_utils::cur_us();
+  snapshot_all(snap, clients);
+  auto st2 = utils::time_utils::cur_us();
 
-    // Breakdown connections
-    disconnect_all(clients);
+  // Execute query
+  auto qt1 = utils::time_utils::cur_us();
+  query_all(res, query, clients);
+  auto qt2 = utils::time_utils::cur_us();
 
-    auto ct = (ct2 - ct1);
-    auto st = (st2 - st1);
-    auto qt = (qt2 - qt1);
-    auto tot = ct + st + qt;
-    fprintf(stderr, "Query time: %llu us (%llu us + %llu us + %llu us)\n", tot,
-            ct, st, qt);
-    fprintf(stderr, "Result vector: ");
-    for (auto r : res) {
-      fprintf(stderr, " %u ", r);
-    }
-    fprintf(stderr, "\n");
+  // Breakdown connections
+  disconnect_all(clients);
+
+  auto ct = (ct2 - ct1);
+  auto st = (st2 - st1);
+  auto qt = (qt2 - qt1);
+  auto tot = ct + st + qt;
+  std::cerr << "Query time: " << tot << "us (" << ct << "us + " << st << "us + "
+      << qt << "us\n";
+  std::cerr << "Result vector: ";
+  for (auto r : res) {
+    std::cerr << " " << r << " ";
   }
+  std::cerr << "\n";
 
   return 0;
 }
