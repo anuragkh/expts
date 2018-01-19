@@ -78,7 +78,10 @@ void disconnect_all(std::vector<confluo::rpc::rpc_client>& clients) {
 
 int main(int argc, char** argv) {
   if (argc != 4) {
-    fprintf(stderr, "Expected 4 args, got %d\n", argc);
+    fprintf(stderr, "Expected 4 args, got %d:", argc);
+    for (int i = 0; i < argc; i++)
+      fprintf(stderr, " %s ", argv[i]);
+    fprintf(stderr, "\n");
     print_usage(argv[0]);
     return -1;
   }
