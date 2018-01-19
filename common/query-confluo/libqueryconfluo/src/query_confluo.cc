@@ -58,14 +58,15 @@ void snapshot_all(std::vector<uint64_t>& snap,
   }
 }
 
-void query_all(std::vector<bool>& res, const std::string& filter_expr,
+void query_all(std::vector<std::string>& res, const std::string& agg_expr,
+               const std::string& filter_expr,
                std::vector<confluo::rpc::rpc_client>& clients) {
   for (size_t i = 0; i < clients.size(); i++) {
-    clients[i].send_execute_filter(filter_expr);
+    clients[i].send_execute_aggregate(agg_expr, filter_expr);
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
-    res[i] = clients[i].recv_execute_filter().has_more();
+    res[i] = clients[i].recv_execute_aggregate();
   }
 }
 
@@ -76,7 +77,7 @@ void disconnect_all(std::vector<confluo::rpc::rpc_client>& clients) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
+  if (argc != 4) {
     fprintf(stderr, "Must specify at least one end-point\n");
     print_usage(argv[0]);
     return -1;
@@ -84,7 +85,8 @@ int main(int argc, char** argv) {
 
   std::vector<endpoint> eps;
   std::ifstream epfile(argv[1]);
-  std::string query = argv[2];
+  std::string filter_expr = argv[2];
+  std::string agg_expr = argv[3];
   std::string ep_str;
   while (std::getline(epfile, ep_str)) {
     auto splits = utils::string_utils::split(ep_str, ':');
@@ -109,7 +111,7 @@ int main(int argc, char** argv) {
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
   std::vector<uint64_t> snap(eps.size());
-  std::vector<bool> res(eps.size());
+  std::vector<std::string> res(eps.size());
 
   // Setup connections
   auto ct1 = utils::time_utils::cur_us();
@@ -128,7 +130,7 @@ int main(int argc, char** argv) {
 
   // Execute query
   auto qt1 = utils::time_utils::cur_us();
-  query_all(res, query, clients);
+  query_all(res, agg_expr, filter_expr, clients);
   auto qt2 = utils::time_utils::cur_us();
 
   // Breakdown connections
