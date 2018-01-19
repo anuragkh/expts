@@ -4,9 +4,8 @@ sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
 expt=${1:-"priority"}
-controller=${2:-"localhost"}
-host=${3:-"localhost"}
-nudp=${4:-"8"}
+host=${2:-"localhost"}
+nudp=${3:-"8"}
 
 nhosts=$((nudp + 1))
 echo "Starting $nhosts endpoints..."
