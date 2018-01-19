@@ -9,7 +9,7 @@
 #include "time_utils.h"
 
 void print_usage(char* exec) {
-  fprintf(stderr, "Usage: %s [end-points]\n", exec);
+  fprintf(stderr, "Usage: %s [end-points] [query]\n", exec);
 }
 
 struct endpoint {
@@ -68,39 +68,40 @@ void disconnect_all(std::vector<confluo::rpc::rpc_client>& clients) {
 }
 
 int main(int argc, char** argv) {
-  if (argc == 1) {
+  if (argc != 3) {
     fprintf(stderr, "Must specify at least one end-point\n");
     print_usage(argv[0]);
     return -1;
   }
 
-  int num_eps = argc - 1;
-  std::vector<endpoint> eps(num_eps);
-  for (int i = 1; i < argc; i++) {
-    auto splits = utils::string_utils::split(std::string(argv[i]), ':');
+  std::vector<endpoint> eps;
+  std::ifstream epfile(argv[1]);
+  std::string query = argv[2];
+  std::string ep_str;
+  while (std::getline(epfile, ep_str)) {
+    auto splits = utils::string_utils::split(ep_str, ':');
     if (splits.size() != 3) {
-      fprintf(stderr, "Malformed endpoint: %s\n", argv[i]);
+      fprintf(stderr, "Malformed endpoint: %s\n", ep_str.c_str());
       print_usage(argv[0]);
       return -1;
     }
-    eps[i - 1].host = splits[0];
+    endpoint ep;
+    ep.host = splits[0];
     try {
-      eps[i - 1].port = std::stoi(splits[1]);
+      ep.port = std::stoi(splits[1]);
     } catch (std::exception& e) {
-      fprintf(stderr, "Malformed endpoint: %s (%s)\n", argv[i], e.what());
+      fprintf(stderr, "Malformed endpoint: %s (%s)\n", ep_str.c_str(),
+              e.what());
       print_usage(argv[0]);
       return -1;
     }
-    eps[i - 1].trace = splits[2];
+    ep.trace = splits[2];
+    eps.push_back(ep);
   }
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
   std::vector<uint64_t> snap(eps.size());
   std::vector<bool> res(eps.size());
-
-  std::string query;
-  std::cerr << "Filter expression: ";
-  std::getline(std::cin, query);
 
   // Setup connections
   auto ct1 = utils::time_utils::cur_us();
@@ -123,13 +124,10 @@ int main(int argc, char** argv) {
   auto ct = (ct2 - ct1);
   auto st = (st2 - st1);
   auto qt = (qt2 - qt1);
-  auto tot = ct + st + qt;
-  std::cerr << "Query time: " << tot << "us (" << ct << "us + " << st << "us + "
-      << qt << "us\n";
-  std::cerr << "Result vector: ";
-  for (auto r : res) {
+  auto t = ct + st + qt;
+  std::cout << t << " " << ct << " " << st << " " << qt << "\n";
+  for (auto r : res)
     std::cerr << " " << r << " ";
-  }
   std::cerr << "\n";
 
   return 0;
