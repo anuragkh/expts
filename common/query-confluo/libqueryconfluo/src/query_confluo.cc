@@ -56,6 +56,7 @@ void query_all(std::vector<size_t>& res, const std::string& query,
       res[i] = 0;
       while (r.has_more()) {
         res[i] ++;
+        ++r;
       }
     }));
   }
