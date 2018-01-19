@@ -20,11 +20,12 @@ echo "Done starting up endpoints"
 echo "Loading traces on endpoints..."
 for i in `seq 1 $nhosts`; do
   port=$((9090 + i))
-  echo "Loading trace @ ep $i on port $port"
   if [ $i == "1" ]; then
+    echo "Loading trace @ ep $i on port $port with tcp schema"
     ssh $host $sbin/../common/load-trace.sh $sbin/tcp_schema.txt\
       $sbin/$expt/traces/flow${i} localhost $port&
   else
+    echo "Loading trace @ ep $i on port $port with udp schema"
     ssh $host $sbin/../common/load-trace.sh $sbin/udp_schema.txt\
       $sbin/$expt/traces/flow${i} localhost $port&
   fi
