@@ -24,6 +24,19 @@ void connect_all(std::vector<confluo::rpc::rpc_client>& clients,
   for (size_t i = 0; i < eps.size(); i++) {
     workers.push_back(std::thread([i, &eps, &clients]() {
       clients[i].connect(eps[i].host, eps[i].port);
+    }));
+  }
+
+  for (size_t i = 0; i < eps.size(); i++) {
+    workers[i].join();
+  }
+}
+
+void set_multilog_all(std::vector<confluo::rpc::rpc_client>& clients,
+                      const std::vector<endpoint>& eps) {
+  std::vector<std::thread> workers;
+  for (size_t i = 0; i < eps.size(); i++) {
+    workers.push_back(std::thread([i, &eps, &clients]() {
       clients[i].set_current_atomic_multilog(eps[i].trace);
     }));
   }
@@ -102,6 +115,11 @@ int main(int argc, char** argv) {
   auto ct1 = utils::time_utils::cur_us();
   connect_all(clients, eps);
   auto ct2 = utils::time_utils::cur_us();
+
+  // Set multi-log
+  // NOTE: Not measuring this time since in monitoring case, this can
+  // easily be avoided by hardcoding a single multilog per endpoint.
+  set_multilog_all(clients, eps);
 
   // Emulate snapshot algorithm
   auto st1 = utils::time_utils::cur_us();
