@@ -52,12 +52,14 @@ int main(int argc, char** argv) {
   client.create_atomic_multilog(trace_name, schema,
                                 confluo::storage::storage_mode::DURABLE_RELAXED);
   auto s = client.current_schema();
+  std::regex vlan_tag("vlan\\d_tag", std::regex_constants::icase);
   for (auto c: s.columns()) {
-    if (std::regex_match(c.name(), std::regex("vlan\\d_tag"))) {
+    if (std::regex_match(c.name(), vlan_tag)) {
       fprintf(stderr, "Adding index on %s\n", c.name().c_str());
       client.add_index(c.name());
     }
   }
+  fprintf(stderr, "Adding index on ipv4_tos\n");
   client.add_index("ipv4_tos");
   size_t pkt_size = client.current_schema().record_size();
   size_t num_pkts = trace_bytes / pkt_size;
