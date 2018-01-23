@@ -65,6 +65,12 @@ int main(int argc, char** argv) {
   size_t num_pkts = trace_bytes / pkt_size;
   for (size_t i = 0; i < num_pkts; i++) {
     confluo::rpc::record_data rec(trace_buf + i * pkt_size, pkt_size);
+    auto rvec = s.data_to_record_vector(rec.data());
+    fprintf(stderr, "{ ");
+    for (size_t i = 0; i < rvec.size(); i++) {
+      fprintf(stderr, "%s: %s, ", s[i].name().c_str(), rvec[i].c_str());
+    }
+    fprintf(stderr, "}\n");
     client.append(rec);
   }
   fprintf(stderr, "Finished loading %zu packets\n", num_pkts);
