@@ -16,11 +16,27 @@ struct endpoint {
   std::string host;
   int port;
   std::string trace;
+
+  std::string to_string() const {
+    return host + ":" + std::to_string(port) + ":" + trace;
+  }
+
+  char const* c_str() const {
+    return to_string().c_str();
+  }
 };
 
 struct query {
   std::string filter_expr;
   std::string agg_expr;
+
+  std::string to_string() const {
+    return filter_expr + ", " + agg_expr;
+  }
+
+  char const* c_str() const {
+    return to_string().c_str();
+  }
 };
 
 void connect_all(std::vector<confluo::rpc::rpc_client>& clients,
@@ -117,6 +133,7 @@ int main(int argc, char** argv) {
     q.filter_expr = splits[3];
     q.agg_expr = splits[4];
     queries.push_back(q);
+    std::cerr << "Parsed endpoint " << ep.to_string() << " query " << q.to_string() << "\n";
   }
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
