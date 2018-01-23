@@ -18,6 +18,11 @@ struct endpoint {
   std::string trace;
 };
 
+struct query {
+  std::string filter_expr;
+  std::string agg_expr;
+};
+
 void connect_all(std::vector<confluo::rpc::rpc_client>& clients,
                  const std::vector<endpoint>& eps) {
   std::vector<std::thread> workers;
@@ -58,11 +63,11 @@ void snapshot_all(std::vector<uint64_t>& snap,
   }
 }
 
-void query_all(std::vector<std::string>& res, const std::string& agg_expr,
-               const std::string& filter_expr,
+void query_all(std::vector<std::string>& res, const std::vector<query>& queries,
                std::vector<confluo::rpc::rpc_client>& clients) {
   for (size_t i = 0; i < clients.size(); i++) {
-    clients[i].send_execute_aggregate(agg_expr, filter_expr);
+    clients[i].send_execute_aggregate(queries[i].agg_expr,
+                                      queries[i].filter_expr);
   }
 
   for (size_t i = 0; i < clients.size(); i++) {
@@ -77,8 +82,8 @@ void disconnect_all(std::vector<confluo::rpc::rpc_client>& clients) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 4) {
-    fprintf(stderr, "Expected 4 args, got %d:", argc);
+  if (argc != 2) {
+    fprintf(stderr, "Expected 2 args, got %d:", argc);
     for (int i = 0; i < argc; i++)
       fprintf(stderr, " %s ", argv[i]);
     fprintf(stderr, "\n");
@@ -87,14 +92,13 @@ int main(int argc, char** argv) {
   }
 
   std::vector<endpoint> eps;
+  std::vector<query> queries;
   std::ifstream epfile(argv[1]);
-  std::string filter_expr = argv[2];
-  std::string agg_expr = argv[3];
   std::string ep_str;
   while (std::getline(epfile, ep_str)) {
     auto splits = utils::string_utils::split(ep_str, ':');
-    if (splits.size() != 3) {
-      fprintf(stderr, "Malformed endpoint: %s\n", ep_str.c_str());
+    if (splits.size() != 5) {
+      fprintf(stderr, "Malformed entry: %s\n", ep_str.c_str());
       print_usage(argv[0]);
       return -1;
     }
@@ -103,13 +107,16 @@ int main(int argc, char** argv) {
     try {
       ep.port = std::stoi(splits[1]);
     } catch (std::exception& e) {
-      fprintf(stderr, "Malformed endpoint: %s (%s)\n", ep_str.c_str(),
-              e.what());
+      fprintf(stderr, "Malformed port: %s (%s)\n", splits[1].c_str(), e.what());
       print_usage(argv[0]);
       return -1;
     }
     ep.trace = splits[2];
     eps.push_back(ep);
+    query q;
+    q.filter_expr = splits[3];
+    q.agg_expr = splits[4];
+    queries.push_back(q);
   }
 
   std::vector<confluo::rpc::rpc_client> clients(eps.size());
@@ -133,7 +140,7 @@ int main(int argc, char** argv) {
 
   // Execute query
   auto qt1 = utils::time_utils::cur_us();
-  query_all(res, agg_expr, filter_expr, clients);
+  query_all(res, queries, clients);
   auto qt2 = utils::time_utils::cur_us();
 
   // Breakdown connections
