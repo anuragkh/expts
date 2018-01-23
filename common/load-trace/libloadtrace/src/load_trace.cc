@@ -51,8 +51,13 @@ int main(int argc, char** argv) {
   std::string trace_name = get_name(trace_file);
   client.create_atomic_multilog(trace_name, schema,
                                 confluo::storage::storage_mode::DURABLE_RELAXED);
-  client.add_index("vlan1_tag");
-  client.add_index("vlan2_tag");
+  auto s = client.current_schema();
+  for (auto c: s.columns()) {
+    if (std::regex_match(c.name(), std::regex("vlan\\d_tag"))) {
+      fprintf(stderr, "Adding index on %s\n", c.name().c_str());
+      client.add_index(c.name());
+    }
+  }
   client.add_index("ipv4_tos");
   size_t pkt_size = client.current_schema().record_size();
   size_t num_pkts = trace_bytes / pkt_size;
