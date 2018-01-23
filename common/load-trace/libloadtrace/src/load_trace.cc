@@ -69,7 +69,8 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < rvec.size(); i++) {
       if (std::regex_match(s[i].name(), vlan_tag)) {
         uint16_t value = utils::string_utils::lexical_cast<uint16_t>(rvec[i]);
-        fprintf(stderr, "%s: %u, ", s[i].name().c_str(), ntohs(value));
+        fprintf(stderr, "%s: %u (%u), ", s[i].name().c_str(),
+                ntohs(value) & 0xFFF, value);
       }
     }
     fprintf(stderr, "}\n");
