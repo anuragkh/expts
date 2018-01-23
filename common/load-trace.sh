@@ -5,7 +5,7 @@ sbin="`cd "$sbin"; pwd`"
 
 schema=${1:-"schema.txt"}
 trace=${2:-"trace/flow1"}
-host=${3:-"localhost"}
+host=${3:-"127.0.0.1"}
 port=${4:-"9090"}
 
 ltrace_path="$sbin/load-trace"
