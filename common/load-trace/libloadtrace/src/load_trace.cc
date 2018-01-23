@@ -9,15 +9,14 @@
 std::string get_name(const std::string& s) {
   char sep = '/';
   size_t i = s.rfind(sep, s.length());
-  if (i != std::string::npos) 
-    return(s.substr(i + 1, s.length() - i));
+  if (i != std::string::npos)
+    return (s.substr(i + 1, s.length() - i));
   return "";
 }
 
 int main(int argc, char** argv) {
   if (argc < 5) {
-    fprintf(stderr, "Usage: %s [schema] [trace] [host] [port]\n",
-            argv[0]);
+    fprintf(stderr, "Usage: %s [schema] [trace] [host] [port]\n", argv[0]);
     return -1;
   }
 
@@ -30,7 +29,7 @@ int main(int argc, char** argv) {
   fprintf(stderr, "Reading schema...\n");
   std::ifstream schema_in(schema_file);
   std::string schema((std::istreambuf_iterator<char>(schema_in)),
-                         std::istreambuf_iterator<char>());
+                     std::istreambuf_iterator<char>());
   schema_in.close();
   fprintf(stderr, "Read schema: [%s]\n", schema.c_str());
 
@@ -49,11 +48,11 @@ int main(int argc, char** argv) {
   fprintf(stderr, "Loading trace...\n");
   confluo::rpc::rpc_client client(host, port);
   std::string trace_name = get_name(trace_file);
-  client.create_atomic_multilog(trace_name, schema,
-                                confluo::storage::storage_mode::DURABLE_RELAXED);
+  client.create_atomic_multilog(
+      trace_name, schema, confluo::storage::storage_mode::DURABLE_RELAXED);
   auto s = client.current_schema();
   std::regex vlan_tag("vlan\\d_tag", std::regex_constants::icase);
-  for (auto c: s.columns()) {
+  for (auto c : s.columns()) {
     if (std::regex_match(c.name(), vlan_tag)) {
       fprintf(stderr, "Adding index on %s\n", c.name().c_str());
       client.add_index(c.name());
@@ -68,7 +67,10 @@ int main(int argc, char** argv) {
     auto rvec = s.data_to_record_vector(rec.data());
     fprintf(stderr, "{ ");
     for (size_t i = 0; i < rvec.size(); i++) {
-      fprintf(stderr, "%s: %s, ", s[i].name().c_str(), rvec[i].c_str());
+      if (std::regex_match(s[i].name(), vlan_tag)) {
+        uint16_t value = utils::string_utils::lexical_cast<uint16_t>(rvec[i]);
+        fprintf(stderr, "%s: %u, ", s[i].name().c_str(), value);
+      }
     }
     fprintf(stderr, "}\n");
     client.append(rec);
