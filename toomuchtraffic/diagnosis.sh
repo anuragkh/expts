@@ -3,4 +3,4 @@
 sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
-$sbin/query-confluo/build/bin/query_confluo $@
+$sbin/../common/query-confluo.sh $@ 1>>results.txt 2>>log.stderr
