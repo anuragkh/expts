@@ -1,15 +1,15 @@
 { 
-	timestamp: ULONG,
+  timestamp: ULONG,
 
-	ether_d_addr: STRING(6), 
-	ether_s_addr: STRING(6), 
-	ether_type: SHORT, 
+  ether_d_addr: STRING(6), 
+  ether_s_addr: STRING(6), 
+  ether_type: SHORT, 
 
-	vlan1_tag: USHORT,
-	vlan1_eth_proto: USHORT,
-	
-	vlan2_tag: USHORT,
-	vlan2_eth_proto: USHORT,
+  vlan1_tag: USHORT,
+  vlan1_eth_proto: USHORT,
+  
+  vlan2_tag: USHORT,
+  vlan2_eth_proto: USHORT,
 
   vlan3_tag: USHORT,
   vlan3_eth_proto: USHORT,
@@ -23,24 +23,24 @@
   vlan6_tag: USHORT,
   vlan6_eth_proto: USHORT,
 
-	ipv4_version_ihl: UCHAR, 
-	ipv4_tos: UCHAR, 
-	ipv4_total_length: USHORT, 
-	ipv4_packet_id: USHORT,
-	ipv4_fragment_offset: USHORT,
-	ipv4_ttl: UCHAR,
-	ipv4_next_proto_id: UCHAR,
-	ipv4_hdr_cksum: USHORT,
-	ipv4_src_addr: UINT,
-	ipv4_dst_addr: UINT,
+  ipv4_version_ihl: UCHAR, 
+  ipv4_tos: UCHAR, 
+  ipv4_total_length: USHORT, 
+  ipv4_packet_id: USHORT,
+  ipv4_fragment_offset: USHORT,
+  ipv4_ttl: UCHAR,
+  ipv4_next_proto_id: UCHAR,
+  ipv4_hdr_cksum: USHORT,
+  ipv4_src_addr: UINT,
+  ipv4_dst_addr: UINT,
 
-	tcp_src_port: USHORT,
-	tcp_dst_port: USHORT,
-	tcp_sent_seq: UINT,
-	tcp_recv_ack: UINT,
-	tcp_data_off: UCHAR,
-	tcp_tcp_flags: UCHAR,
-	tcp_rx_win: USHORT,
-	tcp_cksum: USHORT,
-	tcp_urp: USHORT
+  tcp_src_port: USHORT,
+  tcp_dst_port: USHORT,
+  tcp_sent_seq: UINT,
+  tcp_recv_ack: UINT,
+  tcp_data_off: UCHAR,
+  tcp_tcp_flags: UCHAR,
+  tcp_rx_win: USHORT,
+  tcp_cksum: USHORT,
+  tcp_urp: USHORT
 }
