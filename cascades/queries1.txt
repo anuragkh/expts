@@ -1,0 +1,5 @@
+127.0.0.1:9091:flow1:vlan5_tag==256&&vlan6_tag==50715:SUM(ipv4_total_length)
+127.0.0.1:9091:flow1:vlan3_tag==512&&vlan4_tag==17947:SUM(ipv4_total_length)
+127.0.0.1:9091:flow1:vlan1_tag==768&&vlan2_tag==56090:SUM(ipv4_total_length)
+127.0.0.1:9092:flow2:vlan3_tag==256&&vlan4_tag==50715:SUM(ipv4_total_length)
+127.0.0.1:9092:flow2:vlan1_tag==512&&vlan2_tag==18203:SUM(ipv4_total_length)
