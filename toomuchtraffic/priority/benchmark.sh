@@ -17,18 +17,17 @@ function gen_queries() {
 
 $sbin/../../common/teardown.sh $host
 
-for nudp in 1 2 4 8 16; do
+for nudp in 32; do
   $sbin/../setup.sh priority $host $nudp
   gen_queries $host $((nudp + 1))
   # Warmup runs
   for run in {1..10}; do
-    $sbin/../diagnosis.sh queries.txt 
+    $sbin/../../common/query-confluo.sh queries.txt 1>>/dev/null 2>>/dev/null
   done
   # Actual runs
   for run in {1..10}; do
-    $sbin/../diagnosis.sh queries.txt
+    $sbin/../../common/query-confluo.sh queries.txt 1>>udp${nudp}.txt 2>>log.stderr
   done
-  mv results.txt udp${nudp}.txt
   rm -f queries.txt
   $sbin/../../common/teardown.sh $host
 done
