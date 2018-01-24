@@ -4,7 +4,7 @@ sbin="`dirname "$0"`"
 sbin="`cd "$sbin"; pwd`"
 
 host=${1:-"localhost"}
-nudp=${2:-"2"}
+nudp="2"
 
 nhosts=$((nudp + 1))
 echo "Starting $nhosts endpoints..."
